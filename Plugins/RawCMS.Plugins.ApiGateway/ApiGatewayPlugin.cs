@@ -15,6 +15,7 @@ using RawCMS.Library.Core;
 using RawCMS.Library.Core.Extension;
 using RawCMS.Library.Core.Helpers;
 using RawCMS.Library.Core.Interfaces;
+using RawCMS.Library.Service;
 using RawCMS.Plugins.ApiGateway.Classes;
 using RawCMS.Plugins.ApiGateway.Classes.Balancer;
 using RawCMS.Plugins.ApiGateway.Classes.Balancer.Policy;
@@ -59,6 +60,9 @@ namespace RawCMS.Plugins.ApiGateway
                     await next();
                 });
             }
+
+            var crudService = app.ApplicationServices.GetService<CRUDService>();
+            crudService.EnsureCollection("_logs");
         }
 
         public override void ConfigureMvc(IMvcBuilder builder)
