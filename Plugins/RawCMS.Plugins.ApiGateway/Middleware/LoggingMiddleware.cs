@@ -51,7 +51,7 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
                     logger.LogInformation($"Status Code: {context.Response.StatusCode}");
                     logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Response.Headers)}");
 
-                    if (context.Request.Body != null && context.Request.Body.CanRead)
+                    if (context.Response.Body != null && context.Response.Body.CanRead)
                     {
                         using (var reader = new StreamReader(context.Response.Body))
                         {
