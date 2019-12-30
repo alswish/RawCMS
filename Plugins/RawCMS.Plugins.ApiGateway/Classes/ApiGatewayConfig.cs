@@ -63,7 +63,8 @@ namespace RawCMS.Plugins.ApiGateway.Classes
             };
             Logging = new LoggingOption
             {
-                Enable = false
+                FileEnable = false,
+                DBEnable = false
             };
         }
 

@@ -35,25 +35,28 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
             await next(context);
             try
             {
-                logger.LogInformation($"Request: {context.Request.Path}");
-                logger.LogInformation($"Method: {context.Request.Method}");
-                logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Request.Headers)}");
-                if (context.Request.Body != null && context.Request.Body.CanRead)
+                if (pluginConfig.Logging.FileEnable)
                 {
-                    using (var reader = new StreamReader(context.Request.Body))
+                    logger.LogInformation($"Request: {context.Request.Path}");
+                    logger.LogInformation($"Method: {context.Request.Method}");
+                    logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Request.Headers)}");
+                    if (context.Request.Body != null && context.Request.Body.CanRead)
                     {
-                        logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                        using (var reader = new StreamReader(context.Request.Body))
+                        {
+                            logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                        }
                     }
-                }
-                logger.LogInformation("Response************");
-                logger.LogInformation($"Status Code: {context.Response.StatusCode}");
-                logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Response.Headers)}");
+                    logger.LogInformation("Response************");
+                    logger.LogInformation($"Status Code: {context.Response.StatusCode}");
+                    logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Response.Headers)}");
 
-                if (context.Request.Body != null && context.Request.Body.CanRead)
-                {
-                    using (var reader = new StreamReader(context.Response.Body))
+                    if (context.Request.Body != null && context.Request.Body.CanRead)
                     {
-                        logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                        using (var reader = new StreamReader(context.Response.Body))
+                        {
+                            logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                        }
                     }
                 }
             }

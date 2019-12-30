@@ -10,6 +10,7 @@ namespace RawCMS.Plugins.ApiGateway.Classes.Settings
 {
     public class LoggingOption
     {
-        public bool Enable { get; set; }
+        public bool FileEnable { get; set; }
+        public bool DBEnable { get; set; }
     }
 }
