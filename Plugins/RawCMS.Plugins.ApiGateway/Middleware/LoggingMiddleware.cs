@@ -9,9 +9,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RawCMS.Library.Core.Extension;
+using RawCMS.Library.Service;
 using RawCMS.Plugins.ApiGateway.Classes;
+using RawCMS.Plugins.ApiGateway.Classes.Models;
 using RawCMS.Plugins.ApiGateway.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -21,9 +25,12 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
     [MiddlewarePriority(Order = 3)]
     public class LoggingMiddleware : GatewayMiddleware
     {
-        public LoggingMiddleware(RequestDelegate requestDelegate, ILogger logger, ApiGatewayConfig config, IEnumerable<RawHandler> handlers)
+        private readonly CRUDService _crudService;
+
+        public LoggingMiddleware(RequestDelegate requestDelegate, ILogger logger, ApiGatewayConfig config, IEnumerable<RawHandler> handlers, CRUDService crudService)
             : base(requestDelegate, logger, config, handlers)
         {
+            this._crudService = crudService;
         }
 
         public override string Name => "LoggingMiddleware";
@@ -59,8 +66,42 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
                         }
                     }
                 }
+
+                if(pluginConfig.Logging.DBEnable)
+                {
+                    LogEntity dbLog = new LogEntity()
+                    {
+                        RequestOn = DateTime.Now,
+                        Path = context.Request.Path,
+                        Method = context.Request.Method,
+                        RequestHeaders = JsonConvert.SerializeObject(context.Request.Headers),
+                        ResponseStatus = context.Response.StatusCode,
+                        ResponseHeaders = JsonConvert.SerializeObject(context.Response.Headers),
+                        RemoteIpAddress = context.Connection.RemoteIpAddress.ToString()
+                    };
+
+                    if (context.Request.Body != null && context.Request.Body.CanRead)
+                    {
+                        using (var reader = new StreamReader(context.Request.Body))
+                        {
+                            dbLog.RequestContent = await reader.ReadToEndAsync();
+                        }
+                    }
+
+                    if (context.Response.Body != null && context.Response.Body.CanRead)
+                    {
+                        using (var reader = new StreamReader(context.Response.Body))
+                        {
+                            dbLog.ResponseContent = await reader.ReadToEndAsync();
+                        }
+                    }
+
+                    this._crudService.Insert("_logs", JObject.FromObject(dbLog));
+                }
             }
-            catch { }
+            catch(Exception exc)
+            { 
+            }
         }
     }
 }
