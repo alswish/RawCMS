@@ -52,5 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\RawCMS.Library\RawCMS.Library.csproj" />
+    <ProjectReference Include="..\RawCMS.Plugins.Core\RawCMS.Plugins.Core.csproj" />
   </ItemGroup>
 </Project>

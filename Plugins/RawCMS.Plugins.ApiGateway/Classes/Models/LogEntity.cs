@@ -18,5 +18,6 @@ namespace RawCMS.Plugins.ApiGateway.Classes.Models
         public string ResponseContent { get; set; }
         public int ResponseStatus { get; set; }
         public DateTime RequestOn { get; set; }
+        public string User { get; set; }
     }
 }

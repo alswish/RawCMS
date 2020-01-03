@@ -18,7 +18,10 @@ using RawCMS.Plugins.ApiGateway.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
+using RawCMS.Plugins.Core.Model;
 
 namespace RawCMS.Plugins.ApiGateway.Middleware
 {
@@ -77,8 +80,14 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
                         RequestHeaders = JsonConvert.SerializeObject(context.Request.Headers),
                         ResponseStatus = context.Response.StatusCode,
                         ResponseHeaders = JsonConvert.SerializeObject(context.Response.Headers),
-                        RemoteIpAddress = context.Connection.RemoteIpAddress.ToString()
+                        RemoteIpAddress = context.Connection.RemoteIpAddress.ToString(),
+                        
                     };
+
+                    if(context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
+                    {
+                        dbLog.User = context.User.Claims.Where(x => x.Type == "UserName").Select(x => x.Value).ToString();
+                    }
 
                     if (context.Request.Body != null && context.Request.Body.CanRead)
                     {
