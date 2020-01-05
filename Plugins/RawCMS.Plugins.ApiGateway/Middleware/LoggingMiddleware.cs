@@ -86,7 +86,12 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
 
                     if(context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
                     {
-                        dbLog.User = context.User.Claims.Where(x => x.Type == "UserName").Select(x => x.Value).ToString();
+                        dbLog.User = context
+                                        .User
+                                        .Claims
+                                        .Where(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                                        .FirstOrDefault()
+                                        .Value;
                     }
 
                     if (context.Request.Body != null && context.Request.Body.CanRead)
