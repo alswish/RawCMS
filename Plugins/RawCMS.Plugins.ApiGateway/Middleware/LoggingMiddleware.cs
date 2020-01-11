@@ -45,72 +45,75 @@ namespace RawCMS.Plugins.ApiGateway.Middleware
             await next(context);
             try
             {
-                if (pluginConfig.Logging.FileEnable)
+                if (context.Request.Path.StartsWithSegments("/api"))
                 {
-                    logger.LogInformation($"Request: {context.Request.Path}");
-                    logger.LogInformation($"Method: {context.Request.Method}");
-                    logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Request.Headers)}");
-                    if (context.Request.Body != null && context.Request.Body.CanRead)
+                    if (pluginConfig.Logging.FileEnable)
                     {
-                        using (var reader = new StreamReader(context.Request.Body))
+                        logger.LogInformation($"Request: {context.Request.Path}");
+                        logger.LogInformation($"Method: {context.Request.Method}");
+                        logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Request.Headers)}");
+                        if (context.Request.Body != null && context.Request.Body.CanRead)
                         {
-                            logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                            using (var reader = new StreamReader(context.Request.Body))
+                            {
+                                logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                            }
                         }
-                    }
-                    logger.LogInformation("Response************");
-                    logger.LogInformation($"Status Code: {context.Response.StatusCode}");
-                    logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Response.Headers)}");
+                        logger.LogInformation("Response************");
+                        logger.LogInformation($"Status Code: {context.Response.StatusCode}");
+                        logger.LogInformation($"Headers: {JsonConvert.SerializeObject(context.Response.Headers)}");
 
-                    if (context.Response.Body != null && context.Response.Body.CanRead)
-                    {
-                        using (var reader = new StreamReader(context.Response.Body))
+                        if (context.Response.Body != null && context.Response.Body.CanRead)
                         {
-                            logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
-                        }
-                    }
-                }
-
-                if(pluginConfig.Logging.DBEnable)
-                {
-                    LogEntity dbLog = new LogEntity()
-                    {
-                        RequestOn = DateTime.Now,
-                        Path = context.Request.Path,
-                        Method = context.Request.Method,
-                        RequestHeaders = JsonConvert.SerializeObject(context.Request.Headers),
-                        ResponseStatus = context.Response.StatusCode,
-                        ResponseHeaders = JsonConvert.SerializeObject(context.Response.Headers),
-                        RemoteIpAddress = context.Connection.RemoteIpAddress.ToString(),
-                        
-                    };
-
-                    if(context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
-                    {
-                        dbLog.User = context
-                                        .User
-                                        .Claims
-                                        .Where(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
-                                        .FirstOrDefault()
-                                        .Value;
-                    }
-
-                    if (context.Request.Body != null && context.Request.Body.CanRead)
-                    {
-                        using (var reader = new StreamReader(context.Request.Body))
-                        {
-                            dbLog.RequestContent = await reader.ReadToEndAsync();
+                            using (var reader = new StreamReader(context.Response.Body))
+                            {
+                                logger.LogInformation($"Content: {reader.ReadToEndAsync()}");
+                            }
                         }
                     }
 
-                    if (context.Response.Body != null && context.Response.Body.CanRead)
+                    if (pluginConfig.Logging.DBEnable)
                     {
-                        using (var reader = new StreamReader(context.Response.Body))
+                        LogEntity dbLog = new LogEntity()
                         {
-                            dbLog.ResponseContent = await reader.ReadToEndAsync();
-                        }
-                    }
+                            RequestOn = DateTime.Now,
+                            Path = context.Request.Path,
+                            Method = context.Request.Method,
+                            RequestHeaders = JsonConvert.SerializeObject(context.Request.Headers),
+                            ResponseStatus = context.Response.StatusCode,
+                            ResponseHeaders = JsonConvert.SerializeObject(context.Response.Headers),
+                            RemoteIpAddress = context.Connection.RemoteIpAddress.ToString(),
 
-                    this._crudService.Insert("_logs", JObject.FromObject(dbLog));
+                        };
+
+                        if (context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
+                        {
+                            dbLog.User = context
+                                            .User
+                                            .Claims
+                                            .Where(x => x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                                            .FirstOrDefault()
+                                            .Value;
+                        }
+
+                        if (context.Request.Body != null && context.Request.Body.CanRead)
+                        {
+                            using (var reader = new StreamReader(context.Request.Body))
+                            {
+                                dbLog.RequestContent = await reader.ReadToEndAsync();
+                            }
+                        }
+
+                        if (context.Response.Body != null && context.Response.Body.CanRead)
+                        {
+                            using (var reader = new StreamReader(context.Response.Body))
+                            {
+                                dbLog.ResponseContent = await reader.ReadToEndAsync();
+                            }
+                        }
+
+                        this._crudService.Insert("_logs", JObject.FromObject(dbLog));
+                    }
                 }
             }
             catch(Exception exc)
