@@ -14,6 +14,7 @@ using Newtonsoft.Json.Serialization;
 using RawCMS.Library.Core;
 using RawCMS.Library.DataModel;
 using RawCMS.Library.Service;
+using RawCMS.Plugins.Core.Services;
 
 namespace RawCMS.Plugins.Core
 {
@@ -52,6 +53,7 @@ namespace RawCMS.Plugins.Core
             services.AddSingleton<CRUDService>();
             services.AddSingleton<EntityService>();
             services.AddSingleton<RelationInfoService>();
+            services.AddSingleton<StatsService>();
             services.AddHttpContextAccessor();
             services.AddMvcCore().AddAuthorization() // Note - this is on the IMvcBuilder, not the service collection
     .AddJsonFormatters(options => options.ContractResolver = new CamelCasePropertyNamesContractResolver());
